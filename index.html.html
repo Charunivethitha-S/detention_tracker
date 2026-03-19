@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Smart Detention Tracker</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1d2671, #c33764);
+      color: white;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: 28px;
+    }
+
+    p {
+      opacity: 0.8;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 10px;
+    }
+
+    .card {
+      backdrop-filter: blur(12px);
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 15px;
+      margin: 10px;
+      width: 280px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+    }
+
+    input {
+      padding: 8px;
+      width: 80%;
+      border-radius: 5px;
+      border: none;
+      margin-top: 8px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      background: #00ffcc;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .bar {
+      height: 8px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    .fill {
+      height: 8px;
+      border-radius: 5px;
+      transition: width 0.5s ease;
+    }
+
+    .safe { background: #00ff88; }
+    .risk { background: orange; }
+    .danger { background: red; }
+
+    #summary {
+      margin: 20px;
+      padding: 15px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🎓 AI Smart Detention Tracker</h1>
+<p>Predict. Track. Stay Safe.</p>
+
+<div class="container" id="subjects"></div>
+
+<div id="summary">
+  <h2>📊 Overall Dashboard</h2>
+  <p id="overall"></p>
+  <p id="focus"></p>
+</div>
+
+<script>
+const subjects = [
+  {name: "Probability", total: 48},
+  {name: "Analog Circuits", total: 36},
+  {name: "Signal Processing", total: 48},
+  {name: "Artificial Intelligence", total: 36},
+  {name: "Digital Systems", total: 36},
+  {name: "Design Thinking", total: 24}
+];
+
+let container = document.getElementById("subjects");
+
+subjects.forEach((sub, i) => {
+  container.innerHTML += `
+    <div class="card">
+      <h3>${sub.name}</h3>
+      <p>Total Classes: ${sub.total}</p>
+      <input type="number" id="att${i}" placeholder="Attended">
+      <button onclick="calc(${i})">Analyze</button>
+      <p id="res${i}"></p>
+      <div class="bar"><div id="bar${i}" class="fill"></div></div>
+    </div>
+  `;
+});
+
+function calc(i){
+  let val = document.getElementById("att"+i).value;
+  let total = subjects[i].total;
+
+  if(val == "") return;
+
+  let percent = (val/total)*100;
+  percent = percent.toFixed(1);
+
+  let bar = document.getElementById("bar"+i);
+  let res = document.getElementById("res"+i);
+
+  bar.style.width = percent + "%";
+
+  if(percent >= 75){
+    bar.className = "fill safe";
+    res.innerHTML = "✅ Safe ("+percent+"%)";
+  }
+  else if(percent >= 60){
+    bar.className = "fill risk";
+    let need = Math.ceil((75*total/100) - val);
+    res.innerHTML = "⚠️ Risk ("+percent+"%) | Need "+need+" classes";
+  }
+  else{
+    bar.className = "fill danger";
+    let need = Math.ceil((75*total/100) - val);
+    res.innerHTML = "🚨 Detained ("+percent+"%) | Need "+need+" classes";
+  }
+
+  updateOverall();
+}
+
+function updateOverall(){
+  let total = 0;
+  let attended = 0;
+  let weak = [];
+
+  subjects.forEach((s,i)=>{
+    let val = document.getElementById("att"+i).value;
+    if(val){
+      total += s.total;
+      attended += parseInt(val);
+
+      let p = (val/s.total)*100;
+      if(p < 75) weak.push(s.name);
+    }
+  });
+
+  if(total==0) return;
+
+  let overall = ((attended/total)*100).toFixed(1);
+
+  document.getElementById("overall").innerHTML =
+    "Overall Attendance: " + overall + "%";
+
+  document.getElementById("focus").innerHTML =
+    "⚡ Focus Subjects: " + (weak.length ? weak.join(", ") : "All Good 🎉");
+}
+</script>
+
+</body>
+</html>
